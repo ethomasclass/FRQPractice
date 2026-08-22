@@ -34,22 +34,33 @@ responses" into "look at a dozen points."
 ### The scorer only speaks when it is confident
 
 Calibration against 42 points from released College Board sample responses —
-real student answers with the score each part actually received — found the
-scorer agrees with real readers **29/29 (100%) when its confidence is 0.85 or
-above**, 56% between 0.7 and 0.85, and 25% below 0.7. It is reliable when
-confident and close to a coin flip when it is not.
+real student answers with the score each part actually received — measured
+three models:
 
-So its authority is gated on that, rather than on a prompt that pretends to be
-certain:
+| Model | Overall | When it says >=0.85 | Cost/semester |
+| --- | --- | --- | --- |
+| `claude-sonnet-5` | 88% | 96% (and 100% at 0.7-0.85) | ~$9 |
+| `claude-opus-5` | 83% | **100%** | ~$15 |
+| `claude-haiku-4-5` | 79% | 80% — on 40 of 42 points | ~$2 |
 
-- Below `AI_CONFIDENCE_FLOOR` (0.85), a point it decided alone is **flagged
-  contested** and lands in the teacher's queue.
-- Below that floor it is **not used to grade reviewers** either. Marking a
-  student wrong for disagreeing with a coin flip is noise with a percentage
-  attached, so those points drop out of calibration unless the teacher rules.
+Haiku is disqualified, and not on accuracy. It claimed high confidence on 95%
+of points and was wrong on a fifth of them. This design leans entirely on the
+scorer knowing when it is guessing, so a model that is *confidently* wrong is
+the one failure it cannot absorb — at any price.
 
-Re-run `npm run ai:calibrate` after any change to the prompt, model, or effort
-level, and move the floor if the split moves.
+The usable floor is therefore a property of the model, not a constant, and
+`confidenceFloorFor()` carries the measured value for each. Below it, a point
+the scorer decided alone is **flagged contested** for the teacher, and it is
+**not used to grade reviewers** — marking a student wrong for disagreeing with
+a coin flip is noise with a percentage attached.
+
+An unmeasured model gets a floor of 1, routing every point it decides to the
+teacher. A new model earns trust by running `npm run ai:calibrate`, not by
+being newer.
+
+At 42 points the gap between Sonnet and Opus is one or two judgments — inside
+the noise. Transcribing the Q2/Q3 stimuli (see `fixtures/README.md`) takes the
+fixture to 126 points and would settle it.
 
 ### Why reviewers are graded against the AI, not the final score
 

@@ -21,6 +21,15 @@ export const FEEDBACK_MODEL = process.env.FEEDBACK_MODEL ?? SCORING_MODEL;
  */
 export const SCORING_EFFORT = (process.env.SCORING_EFFORT ?? "high") as "low" | "medium" | "high" | "xhigh" | "max";
 
+/**
+ * Adaptive thinking and the effort control exist on the current Opus, Sonnet,
+ * and Fable families. Older or smaller models reject both with a 400, so the
+ * request has to be shaped per model rather than assuming the newest surface.
+ */
+export function supportsThinkingAndEffort(model: string): boolean {
+  return /^claude-(opus-(5|4-[678])|sonnet-(5|4-6)|fable-5|mythos-5)/.test(model);
+}
+
 let cached: Anthropic | null = null;
 
 export function anthropic(): Anthropic {

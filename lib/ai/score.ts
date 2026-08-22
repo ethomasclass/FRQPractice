@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { anthropic, SCORING_EFFORT, SCORING_MODEL } from "./client";
+import { anthropic, SCORING_EFFORT, SCORING_MODEL, supportsThinkingAndEffort } from "./client";
 
 export type ScorablePart = {
   id: string;
@@ -99,13 +99,16 @@ Return a score for every part, in order.`;
 
   const stimulus = stimulusText ? `\n\nStimulus:\n${stimulusText}` : "";
 
+  // Smaller models reject thinking and effort outright; ask for the format only.
+  const modern = supportsThinkingAndEffort(SCORING_MODEL);
+
   const response = await anthropic().messages.parse({
     model: SCORING_MODEL,
     max_tokens: 16000,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-    thinking: { type: "adaptive" },
+    ...(modern ? { thinking: { type: "adaptive" as const } } : {}),
     output_config: {
-      effort: SCORING_EFFORT,
+      ...(modern ? { effort: SCORING_EFFORT } : {}),
       format: zodOutputFormat(ScoreSchema),
     },
     messages: [

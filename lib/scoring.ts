@@ -4,22 +4,39 @@ export type PeerVerdict = { reviewerId: string; earned: boolean };
 export type Yardstick = { earned: boolean } | null;
 
 /**
- * Below this, the scorer's judgment is not trustworthy enough to decide a
- * point on its own or to grade a reviewer against.
+ * How confident a model has to be before its judgment decides a point on its
+ * own or is used to grade a reviewer.
  *
- * Measured, not guessed. Against 42 points from released College Board sample
- * responses with official reader scores, agreement was 29/29 (100%) at or
- * above 0.85, 5/9 (56%) between 0.7 and 0.85, and 1/4 (25%) below 0.7. The
- * scorer is reliable when it is confident and close to a coin flip when it is
- * not -- so the useful thing is not a better prompt, it is escalating the
- * cases it already knows it is unsure about.
+ * This is a property of the model, not a universal constant, and it is
+ * measured rather than guessed. Against 42 points from released College Board
+ * sample responses with official reader scores:
  *
- * Re-run `npm run ai:calibrate` after any change to the scoring prompt, model,
- * or effort level, and move this if the split moves.
+ *   claude-opus-5    100% at >=0.85,  56% at 0.7-0.85,  25% below 0.7
+ *   claude-sonnet-5   96% at >=0.85, 100% at 0.7-0.85,  50% below 0.7
+ *   claude-haiku-4-5  80% at >=0.85 -- and it claimed >=0.85 on 40 of 42
+ *
+ * Haiku has no usable floor: it is confidently wrong, which is the one failure
+ * this design cannot absorb. The whole system leans on the scorer knowing when
+ * it is guessing, so a model without calibrated confidence is disqualified
+ * however cheap it is.
+ *
+ * An unmeasured model gets a floor of 1, which effectively routes every point
+ * it decides to the teacher. That is deliberate: a new model should have to
+ * earn trust through `npm run ai:calibrate`, not inherit it.
  */
-export const AI_CONFIDENCE_FLOOR = 0.85;
+const MEASURED_FLOORS: Record<string, number> = {
+  "claude-opus-5": 0.85,
+  "claude-sonnet-5": 0.7,
+};
 
-export type AiMark = { earned: boolean; confidence: number } | null;
+/** Conservative until calibration says otherwise. */
+export const UNMEASURED_FLOOR = 1;
+
+export function confidenceFloorFor(model: string): number {
+  return MEASURED_FLOORS[model] ?? UNMEASURED_FLOOR;
+}
+
+export type AiMark = { earned: boolean; confidence: number; model: string } | null;
 
 export type SettledMark = {
   earned: boolean;
@@ -49,7 +66,7 @@ export function settleMark(args: {
   // The teacher has looked at it. Nothing outranks that, and it is no longer contested.
   if (teacher) return { ...base, earned: teacher.earned, source: "teacher", contested: false };
 
-  const aiIsShaky = ai != null && ai.confidence < AI_CONFIDENCE_FLOOR;
+  const aiIsShaky = ai != null && ai.confidence < confidenceFloorFor(ai.model);
 
   if (peerTotalCount === 0) {
     // Makeup work, or nobody completed their review in time. The AI stands
@@ -87,17 +104,17 @@ export function settleMark(args: {
  * the AI and their judgment propagates into every reviewer's grade.
  *
  * A low-confidence AI mark is no yardstick at all. Calibration measured it at
- * roughly a coin flip below AI_CONFIDENCE_FLOOR, and marking a student wrong
- * for disagreeing with a coin flip is not a grade -- it is noise with a
- * percentage attached. Those points are dropped from calibration unless the
- * teacher has ruled on them.
+ * roughly a coin flip below the model's floor, and marking a student wrong for
+ * disagreeing with a coin flip is not a grade -- it is noise with a percentage
+ * attached. Those points are dropped from calibration unless the teacher has
+ * ruled on them.
  */
 export function yardstickFor(args: {
   ai: AiMark;
   teacher: { earned: boolean } | null;
 }): Yardstick {
   if (args.teacher) return args.teacher;
-  if (!args.ai || args.ai.confidence < AI_CONFIDENCE_FLOOR) return null;
+  if (!args.ai || args.ai.confidence < confidenceFloorFor(args.ai.model)) return null;
   return { earned: args.ai.earned };
 }
 

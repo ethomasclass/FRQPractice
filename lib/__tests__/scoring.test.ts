@@ -1,13 +1,20 @@
 import assert from "node:assert/strict";
 import { test, describe } from "node:test";
-import { assignReviews, computeCalibration, settleMark, yardstickFor } from "../scoring";
+import {
+  assignReviews,
+  computeCalibration,
+  confidenceFloorFor,
+  settleMark,
+  UNMEASURED_FLOOR,
+  yardstickFor,
+} from "../scoring";
 
 const peers = (...votes: boolean[]) => votes.map((earned, i) => ({ reviewerId: `r${i}`, earned }));
 
 /** A scorer that agreed with real readers 29 times out of 29 at this confidence. */
-const confidentAi = (earned: boolean) => ({ earned, confidence: 0.95 });
+const confidentAi = (earned: boolean) => ({ earned, confidence: 0.95, model: "claude-opus-5" });
 /** Below the floor, where measured agreement was close to a coin flip. */
-const shakyAi = (earned: boolean) => ({ earned, confidence: 0.6 });
+const shakyAi = (earned: boolean) => ({ earned, confidence: 0.6, model: "claude-opus-5" });
 
 describe("settleMark", () => {
   test("a clear peer majority decides the point", () => {
@@ -222,5 +229,25 @@ describe("low-confidence AI marks", () => {
     });
     assert.equal(c.pointsJudged, 1, "the shaky point is dropped, not counted against them");
     assert.equal(c.accuracy, 1);
+  });
+});
+
+describe("per-model confidence floors", () => {
+  test("a model's floor comes from what calibration measured for it", () => {
+    // Sonnet was accurate down to 0.7 where Opus was not; 0.75 is decisive for
+    // one and a coin flip for the other.
+    assert.equal(confidenceFloorFor("claude-opus-5"), 0.85);
+    assert.equal(confidenceFloorFor("claude-sonnet-5"), 0.7);
+
+    const mark = (model: string) => ({ earned: true, confidence: 0.75, model });
+    assert.equal(yardstickFor({ ai: mark("claude-opus-5"), teacher: null }), null);
+    assert.deepEqual(yardstickFor({ ai: mark("claude-sonnet-5"), teacher: null }), { earned: true });
+  });
+
+  test("an unmeasured model is trusted with nothing until it is calibrated", () => {
+    assert.equal(confidenceFloorFor("some-new-model"), UNMEASURED_FLOOR);
+    const ai = { earned: true, confidence: 0.99, model: "some-new-model" };
+    assert.equal(yardstickFor({ ai, teacher: null }), null, "not used to grade reviewers");
+    assert.equal(settleMark({ peers: [], ai, teacher: null }).contested, true, "routed to the teacher");
   });
 });
