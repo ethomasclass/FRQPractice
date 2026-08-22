@@ -13,7 +13,8 @@
     "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
-    "test": "node --import tsx --test lib/__tests__/*.test.ts"
+    "test": "node --import tsx --test lib/__tests__/*.test.ts",
+    "db:seed:responses": "tsx lib/db/seed-responses.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
