@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/*
+ * Purple and blue. Purple carries identity and action; blue carries structure
+ * and information. The two scoring states — earned and not earned — are the
+ * only place saturated green and amber appear, so they never compete with the
+ * chrome for a reviewer's attention.
+ */
+:root {
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #f6f5ff;
+  --surface-sunken: #efeefb;
+  --border: #e2e0f2;
+  --border-strong: #cbc7e8;
+
+  --foreground: #1a1832;
+  --muted: #5d5980;
+  --subtle: #837fa3;
+
+  --brand: #6d3bd4;
+  --brand-hover: #5b2fbb;
+  --brand-soft: #f0e9ff;
+  --brand-border: #d4c4f7;
+  --on-brand: #ffffff;
+
+  --accent: #2563d9;
+  --accent-soft: #e6eeff;
+  --accent-border: #bcd0f7;
+
+  --earned: #15803d;
+  --earned-soft: #e6f6ec;
+  --earned-border: #b3e0c4;
+
+  --missed: #b4530c;
+  --missed-soft: #fdf0e3;
+  --missed-border: #f2d0aa;
+
+  --contested: #b4245c;
+  --contested-soft: #fdeaf1;
+
+  --highlight: #ddd0fb;
+  --highlight-strong: #c3aaf8;
+
+  --ring: color-mix(in oklab, var(--brand) 45%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #100e1c;
+    --surface: #191630;
+    --surface-muted: #1f1b3a;
+    --surface-sunken: #15122a;
+    --border: #2f2a52;
+    --border-strong: #443c72;
+
+    --foreground: #ece9fb;
+    --muted: #a9a3cd;
+    --subtle: #837da8;
+
+    --brand: #a684ff;
+    --brand-hover: #b89bff;
+    --brand-soft: #262048;
+    --brand-border: #4a3d85;
+    --on-brand: #17122c;
+
+    --accent: #7aa5f5;
+    --accent-soft: #1b2547;
+    --accent-border: #354a80;
+
+    --earned: #63d492;
+    --earned-soft: #16301f;
+    --earned-border: #2a5c3d;
+
+    --missed: #f0a86a;
+    --missed-soft: #33220f;
+    --missed-border: #6b4520;
+
+    --contested: #f77ba8;
+    --contested-soft: #391627;
+
+    --highlight: #3d2f6b;
+    --highlight-strong: #56409b;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-border: var(--brand-border);
+  --color-on-brand: var(--on-brand);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-border: var(--accent-border);
+  --color-earned: var(--earned);
+  --color-earned-soft: var(--earned-soft);
+  --color-earned-border: var(--earned-border);
+  --color-missed: var(--missed);
+  --color-missed-soft: var(--missed-soft);
+  --color-missed-border: var(--missed-border);
+  --color-contested: var(--contested);
+  --color-contested-soft: var(--contested-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-strong: var(--highlight-strong);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Students read peers' prose for twenty minutes straight. Give it room. */
+.prose-response {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
