@@ -14,7 +14,10 @@
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
     "test": "node --import tsx --test lib/__tests__/*.test.ts",
-    "db:seed:responses": "tsx lib/db/seed-responses.ts"
+    "db:seed:responses": "tsx lib/db/seed-responses.ts",
+    "ai:calibrate": "tsx lib/ai/calibrate.ts",
+    "db:seed:reviews": "tsx lib/db/seed-reviews.ts",
+    "db:reset": "tsx lib/db/reset.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
@@ -22,7 +25,8 @@
     "drizzle-orm": "^0.45.2",
     "next": "16.3.2",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

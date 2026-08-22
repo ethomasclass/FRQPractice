@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FRQ Practice
 
-## Getting Started
+A small web app for AP Human Geography: students write timed free-response
+answers, peer review each other against the real rubric, and get a score plus
+feedback. Built for one teacher and about 50 students a semester.
 
-First, run the development server:
+## How it works
+
+An assignment moves through five states, and the teacher advances each one by
+hand — nothing runs on a timer that could fire during a fire drill.
+
+1. **Draft** — write the question and rubric, or have one drafted from released
+   College Board material and edit it. Invisible to students.
+2. **Writing** — students write against a server-side clock.
+3. **Peer review** — four classmates review each response, anonymously.
+4. **Grading** — the teacher settles contested points.
+5. **Released** — students see their score, their feedback, and how well they
+   graded other people.
+
+### How a point is decided
+
+Every part of the question is worth exactly one point, matching how the College
+Board actually scores. For each point:
+
+- **Peer majority decides.**
+- **An even split goes to the AI**, which scored the response independently.
+- **A teacher mark overrides everything.**
+- **A makeup response with no peers** is scored by the AI alone.
+
+A point is flagged **contested** when peers split evenly, or when their majority
+contradicts the AI. Sorting by contested count is what turns "read fifty
+responses" into "look at a dozen points."
+
+### Why reviewers are graded against the AI, not the final score
+
+Students are graded on their reviewing as well as their writing — their
+**calibration score** is how often they agreed with the official read.
+
+That yardstick is deliberately the AI's independent score, never the final
+score. If reviewers were graded on agreeing with the peer majority, the winning
+strategy would be to guess what everyone else said, and calibration would
+measure conformity instead of judgment. The AI scores every response before it
+sees any peer input, so it is the one independent read available. Wherever the
+teacher overrules a point, their ruling replaces the AI as the yardstick and
+propagates into every reviewer's grade automatically.
+
+### The review screen
+
+One rubric part per screen. To award a point a reviewer must **highlight the
+words that earn it** and name **which acceptance criterion** it matched. To
+withhold one they must pick a reason. The Next button stays locked until they do
+one or the other — you cannot slide your way to 7/7.
+
+The withholding reasons come from the Chief Reader reports, which describe the
+same failures every year. "Described, didn't explain" is first for a reason.
+
+## Running it
 
 ```bash
+cp .env.example .env      # set TEACHER_PASSWORD and SESSION_SECRET
+npm install
+npm run db:migrate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Students go to `/`, type the class code, and pick their name. No accounts, no
+passwords, no Google sign-in — most districts restrict third-party app access to
+student Workspace accounts, and finding that out on a writing morning is not a
+recoverable failure. Teachers sign in at `/teacher/signin` with
+`TEACHER_PASSWORD`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Sample data
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:seed              # a class, a roster, and the real 2025 Set 1 Q1 rubric
+npm run db:seed:responses    # eight submitted responses of varying quality
+npm run db:seed:reviews      # completes the outstanding peer reviews
+```
 
-## Learn More
+### AI features
 
-To learn more about Next.js, take a look at the following resources:
+Set `ANTHROPIC_API_KEY` to enable independent scoring, rubric drafting, and
+student feedback. Everything else — writing, peer review, peer-majority scoring,
+CSV export — works without it. Where the key is missing the UI disables those
+buttons rather than failing.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Before trusting the scorer with grades, measure it.** It breaks ties on
+student scores *and* is the yardstick for every reviewer's calibration, so it
+carries real weight:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run ai:calibrate -- fixtures/calibration.json
+```
 
-## Deploy on Vercel
+Point it at responses that already have official scores — the "Sample Student
+Responses and Scoring Commentary" PDFs on AP Central publish real responses
+alongside the score each part received. It reports per-part agreement and, more
+usefully, which direction it errs: too generous inflates grades, too harsh
+punishes reviewers who were right. It exits non-zero below 90%.
+`lib/ai/calibrate.ts` documents the fixture format.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Exemplars and copyright
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Released College Board questions and scoring guidelines are copyrighted.
+Classroom use is fine; republishing them is not. Keep them in your own database
+(the `exemplars` table) or a gitignored folder — never commit them.
+
+## Deploying
+
+Built for Vercel plus a hosted SQLite database (Turso). Set `DATABASE_URL`,
+`DATABASE_AUTH_TOKEN`, `TEACHER_PASSWORD`, `SESSION_SECRET`, and
+`ANTHROPIC_API_KEY`, then run `npm run db:migrate` against the production
+database once. At 50 students and five FRQs a semester this sits inside free
+tiers; the only real cost is AI usage, which is a few dollars a semester.
+
+## Tests
+
+```bash
+npm test        # scoring rules: majorities, ties, overrides, review assignment
+npm run e2e     # sign-in, peer review, and grading in a real browser
+```
+
+`npm run e2e` needs the dev server running. The scoring engine in `lib/scoring.ts`
+is pure functions with no database or network, so the rules that decide student
+grades are testable in isolation.
