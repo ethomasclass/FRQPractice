@@ -45,3 +45,5 @@ local.db
 local.db-*
 .env
 .env.local
+test-results/
+playwright-report/
