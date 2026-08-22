@@ -125,11 +125,24 @@ Classroom use is fine; republishing them is not. Keep them in your own database
 
 ## Deploying
 
-Built for Vercel plus a hosted SQLite database (Turso). Set `DATABASE_URL`,
+Runs on any Node host plus a hosted SQLite database (Turso). Set `DATABASE_URL`,
 `DATABASE_AUTH_TOKEN`, `TEACHER_PASSWORD`, `SESSION_SECRET`, and
 `ANTHROPIC_API_KEY`, then run `npm run db:migrate` against the production
-database once. At 50 students and five FRQs a semester this sits inside free
-tiers; the only real cost is AI usage, which is a few dollars a semester.
+database once.
+
+At 50 students and five FRQs a semester the load is a rounding error — well
+under 1% of a typical free tier's monthly allowance, per year. Two things to
+know before picking a host:
+
+- **Vercel's free Hobby plan is non-commercial only**; commercial use needs Pro.
+  A teacher running this for their own class generates no revenue, but if that
+  distinction matters to you, Cloudflare Workers has a free tier that permits
+  commercial use and runs Next.js via `@opennextjs/cloudflare`.
+- **Scoring and feedback run one response per request, driven from the browser.**
+  Serverless platforms kill long requests, and scoring a class of 50 takes far
+  longer than any of them allow. Each call handles one response and returns, the
+  grading page loops with a progress bar, and an interrupted run resumes from
+  where it stopped rather than starting over.
 
 ## Tests
 

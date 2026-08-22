@@ -3,7 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { GradeRow } from "@/app/actions/gradebook";
-import { overrideMark, releaseAssignment, scoreAssignment, settleAssignment } from "@/app/actions/grading";
+import {
+  overrideMark,
+  releaseAssignment,
+  scoreNextResponse,
+  settleAssignment,
+  writeNextFeedback,
+} from "@/app/actions/grading";
 import { REASON_LABELS } from "@/lib/labels";
 import { Badge, Button, Card } from "@/components/ui";
 
@@ -36,6 +42,8 @@ export function GradeBoard({
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState<string | null>(rows[0]?.responseId ?? null);
   const [note, setNote] = useState("");
+  const [job, setJob] = useState<{ label: string; done: number; total: number } | null>(null);
+  const [jobError, setJobError] = useState("");
 
   const totalContested = rows.reduce((sum, r) => sum + r.contestedCount, 0);
   const scoredCount = rows.filter((r) => r.points.some((p) => p.ai)).length;
@@ -45,6 +53,29 @@ export function GradeBoard({
       await fn();
       router.refresh();
     });
+  }
+
+  /**
+   * Drives a one-at-a-time server action to completion from the browser.
+   *
+   * Scoring fifty responses takes far longer than any serverless request is
+   * allowed to run, so the loop lives here instead. It also means the teacher
+   * watches a counter rather than a spinner that might already be dead.
+   */
+  async function runLoop(label: string, total: number, step: () => Promise<{ done?: boolean; error?: string }>) {
+    setJobError("");
+    setJob({ label, done: 0, total });
+    for (let i = 0; i < total; i++) {
+      const result = await step();
+      if (result.error) {
+        setJobError(result.error);
+        break;
+      }
+      setJob({ label, done: i + 1, total });
+      if (result.done) break;
+    }
+    setJob(null);
+    router.refresh();
   }
 
   return (
@@ -72,21 +103,29 @@ export function GradeBoard({
         <div className="flex flex-wrap gap-2">
           <Button
             variant="secondary"
-            onClick={() => run(() => scoreAssignment(assignmentId))}
-            disabled={pending || !aiReady}
+            onClick={() => runLoop("Scoring", rows.length, () => scoreNextResponse(assignmentId))}
+            disabled={pending || job !== null || !aiReady}
             title={aiReady ? undefined : "Set ANTHROPIC_API_KEY to enable scoring"}
           >
-            {pending ? "Working…" : "Score responses"}
+            Score responses
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => runLoop("Writing feedback", rows.length, () => writeNextFeedback(assignmentId))}
+            disabled={pending || job !== null || !aiReady}
+            title={aiReady ? undefined : "Set ANTHROPIC_API_KEY to enable feedback"}
+          >
+            Write feedback
           </Button>
           <Button variant="secondary" onClick={() => run(() => settleAssignment(assignmentId))} disabled={pending}>
             Recalculate
           </Button>
           <Button
             onClick={() => {
-              if (!confirm("Release scores and feedback to students? This writes feedback for everyone.")) return;
+              if (!confirm("Release scores and feedback to students?")) return;
               run(() => releaseAssignment(assignmentId));
             }}
-            disabled={pending || status === "released"}
+            disabled={pending || job !== null || status === "released"}
           >
             {status === "released" ? "Released" : "Release to students"}
           </Button>
@@ -98,6 +137,31 @@ export function GradeBoard({
           </a>
         </div>
       </Card>
+
+      {job ? (
+        <Card className="p-4">
+          <div className="mb-2 flex items-center justify-between text-sm">
+            <span className="font-medium text-foreground">
+              {job.label} — {job.done} of {job.total}
+            </span>
+            <span className="text-subtle">Keep this tab open.</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-surface-sunken">
+            <div
+              className="h-full rounded-full bg-brand transition-all"
+              style={{ width: `${job.total ? (job.done / job.total) * 100 : 0}%` }}
+            />
+          </div>
+        </Card>
+      ) : null}
+
+      {jobError ? (
+        <Card className="border-missed-border bg-missed-soft p-4">
+          <p className="text-sm text-missed">
+            Stopped: {jobError} Anything already finished is saved — press the button again to pick up where it left off.
+          </p>
+        </Card>
+      ) : null}
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-foreground">Responses</h2>
