@@ -1,4 +1,11 @@
 import { notFound } from "next/navigation";
+
+/**
+ * Scoring and feedback run one response per request from this page. Each takes
+ * 15-25 seconds, so the default 10-second budget is not enough — 60 is the
+ * ceiling on Vercel's Hobby plan and comfortably more than one response needs.
+ */
+export const maxDuration = 60;
 import { gradeView } from "@/app/actions/gradebook";
 import { aiConfigured } from "@/lib/ai/client";
 import { PageHeader } from "@/components/ui";

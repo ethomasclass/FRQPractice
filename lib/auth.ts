@@ -10,6 +10,11 @@ const SESSION_DAYS = 45; // comfortably longer than a grading window
 function secret(): string {
   const s = process.env.SESSION_SECRET;
   if (!s) throw new Error("SESSION_SECRET is not set. Copy .env.example to .env and fill it in.");
+  // A guessable secret lets anyone forge a teacher session, which is every
+  // student's grades. Fail at the door rather than quietly accepting it.
+  if (process.env.NODE_ENV === "production" && s.length < 32) {
+    throw new Error("SESSION_SECRET must be at least 32 characters in production. Generate one with: openssl rand -base64 32");
+  }
   return s;
 }
 
