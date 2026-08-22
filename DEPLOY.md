@@ -2,6 +2,23 @@
 
 Roughly fifteen minutes, start to finish. Both free at this scale.
 
+**GitHub cannot host this app.** GitHub Pages serves static files only — no
+server, no database, and no way to keep a secret, since everything it serves is
+readable in the browser. Your API key and teacher password would be public.
+GitHub holds the code; Vercel runs it and gives you the web address.
+
+## The one-click route
+
+[**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Ftree%2Fclaude%2Fap-geo-frq-platform-siyhkv&env=DATABASE_URL%2CDATABASE_AUTH_TOKEN%2CSESSION_SECRET%2CTEACHER_PASSWORD%2CANTHROPIC_API_KEY&envDescription=Turso%20database%20URL%20and%20token%2C%20a%2032%2B%20character%20session%20secret%2C%20your%20teacher%20password%2C%20and%20%28optionally%29%20an%20Anthropic%20API%20key.&envLink=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Fblob%2Fclaude%2Fap-geo-frq-platform-siyhkv%2FDEPLOY.md&project-name=frq-practice&repository-name=frq-practice)
+
+That clones the repo into your own Vercel account and prompts for the five
+environment variables below. Create the Turso database first (step 1) so you
+have the URL and token ready to paste.
+
+When it finishes you get a live address like `https://frq-practice.vercel.app` —
+that is the link you give students. You can attach your own domain later in the
+Vercel project settings if you'd rather.
+
 ## 1. Create the database
 
 ```bash
