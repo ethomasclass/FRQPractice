@@ -21,7 +21,7 @@ export default async function GradePage({ params }: { params: Promise<{ id: stri
       <PageHeader
         eyebrow="Grading"
         title={view.assignment.title}
-        description="Sorted with the contested points first — where reviewers split, or where they disagreed with the independent read. Everything you don't touch releases as it stands."
+        description="Sorted with the contested points first — where reviewers split, where they disagreed with the independent read, or where the scorer itself was unsure. Everything you don't touch releases as it stands."
       />
       <GradeBoard
         assignmentId={id}

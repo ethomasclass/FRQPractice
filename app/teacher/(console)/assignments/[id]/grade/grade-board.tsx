@@ -241,7 +241,7 @@ export function GradeBoard({
                                 <span className="text-subtle">
                                   · Independent read: {p.ai.earned ? "earned" : "not earned"}
                                   {p.ai.criterionCode ? ` (${p.ai.criterionCode})` : ""}
-                                  {p.ai.confidence < 0.7 ? " · low confidence" : ""}
+                                  {p.ai.confidence < 0.85 ? " · unsure" : ""}
                                 </span>
                               ) : (
                                 <span className="text-subtle">· not scored yet</span>

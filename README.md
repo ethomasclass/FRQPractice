@@ -31,6 +31,26 @@ A point is flagged **contested** when peers split evenly, or when their majority
 contradicts the AI. Sorting by contested count is what turns "read fifty
 responses" into "look at a dozen points."
 
+### The scorer only speaks when it is confident
+
+Calibration against 42 points from released College Board sample responses —
+real student answers with the score each part actually received — found the
+scorer agrees with real readers **29/29 (100%) when its confidence is 0.85 or
+above**, 56% between 0.7 and 0.85, and 25% below 0.7. It is reliable when
+confident and close to a coin flip when it is not.
+
+So its authority is gated on that, rather than on a prompt that pretends to be
+certain:
+
+- Below `AI_CONFIDENCE_FLOOR` (0.85), a point it decided alone is **flagged
+  contested** and lands in the teacher's queue.
+- Below that floor it is **not used to grade reviewers** either. Marking a
+  student wrong for disagreeing with a coin flip is noise with a percentage
+  attached, so those points drop out of calibration unless the teacher rules.
+
+Re-run `npm run ai:calibrate` after any change to the prompt, model, or effort
+level, and move the floor if the split moves.
+
 ### Why reviewers are graded against the AI, not the final score
 
 Students are graded on their reviewing as well as their writing — their

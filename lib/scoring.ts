@@ -3,6 +3,24 @@ import type { MarkSource } from "@/lib/db/schema";
 export type PeerVerdict = { reviewerId: string; earned: boolean };
 export type Yardstick = { earned: boolean } | null;
 
+/**
+ * Below this, the scorer's judgment is not trustworthy enough to decide a
+ * point on its own or to grade a reviewer against.
+ *
+ * Measured, not guessed. Against 42 points from released College Board sample
+ * responses with official reader scores, agreement was 29/29 (100%) at or
+ * above 0.85, 5/9 (56%) between 0.7 and 0.85, and 1/4 (25%) below 0.7. The
+ * scorer is reliable when it is confident and close to a coin flip when it is
+ * not -- so the useful thing is not a better prompt, it is escalating the
+ * cases it already knows it is unsure about.
+ *
+ * Re-run `npm run ai:calibrate` after any change to the scoring prompt, model,
+ * or effort level, and move this if the split moves.
+ */
+export const AI_CONFIDENCE_FLOOR = 0.85;
+
+export type AiMark = { earned: boolean; confidence: number } | null;
+
 export type SettledMark = {
   earned: boolean;
   source: MarkSource;
@@ -20,7 +38,7 @@ export type SettledMark = {
  */
 export function settleMark(args: {
   peers: PeerVerdict[];
-  ai: Yardstick;
+  ai: AiMark;
   teacher: { earned: boolean } | null;
 }): SettledMark {
   const { peers, ai, teacher } = args;
@@ -31,9 +49,12 @@ export function settleMark(args: {
   // The teacher has looked at it. Nothing outranks that, and it is no longer contested.
   if (teacher) return { ...base, earned: teacher.earned, source: "teacher", contested: false };
 
+  const aiIsShaky = ai != null && ai.confidence < AI_CONFIDENCE_FLOOR;
+
   if (peerTotalCount === 0) {
-    // Makeup work, or nobody completed their review in time. The AI stands alone.
-    return { ...base, earned: ai?.earned ?? false, source: "ai_only", contested: false };
+    // Makeup work, or nobody completed their review in time. The AI stands
+    // alone -- so if it is unsure, nothing else is going to catch that.
+    return { ...base, earned: ai?.earned ?? false, source: "ai_only", contested: ai == null || aiIsShaky };
   }
 
   const forEarned = peerEarnedCount * 2;
@@ -64,12 +85,20 @@ export function settleMark(args: {
  * scores every response before it sees any peer input, so it is the one
  * independent read available. Where the teacher has ruled, that ruling replaces
  * the AI and their judgment propagates into every reviewer's grade.
+ *
+ * A low-confidence AI mark is no yardstick at all. Calibration measured it at
+ * roughly a coin flip below AI_CONFIDENCE_FLOOR, and marking a student wrong
+ * for disagreeing with a coin flip is not a grade -- it is noise with a
+ * percentage attached. Those points are dropped from calibration unless the
+ * teacher has ruled on them.
  */
 export function yardstickFor(args: {
-  ai: Yardstick;
+  ai: AiMark;
   teacher: { earned: boolean } | null;
 }): Yardstick {
-  return args.teacher ?? args.ai;
+  if (args.teacher) return args.teacher;
+  if (!args.ai || args.ai.confidence < AI_CONFIDENCE_FLOOR) return null;
+  return { earned: args.ai.earned };
 }
 
 export type CalibrationInput = {

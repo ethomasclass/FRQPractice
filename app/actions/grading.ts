@@ -177,7 +177,7 @@ export async function settleAssignment(assignmentId: string) {
           reviewerId: reviewById.get(m.reviewAssignmentId)!.reviewerId,
           earned: m.earned,
         })),
-        ai: ai ? { earned: ai.earned } : null,
+        ai: ai ? { earned: ai.earned, confidence: ai.confidence } : null,
         teacher: teacher ? { earned: teacher.earned } : null,
       });
 
@@ -194,7 +194,7 @@ export async function settleAssignment(assignmentId: string) {
 
       // Reviewers are measured against the independent read, not the outcome.
       const yardstick = yardstickFor({
-        ai: ai ? { earned: ai.earned } : null,
+        ai: ai ? { earned: ai.earned, confidence: ai.confidence } : null,
         teacher: teacher ? { earned: teacher.earned } : null,
       });
       for (const mark of peersHere) {

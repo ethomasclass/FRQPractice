@@ -5,6 +5,7 @@ import { defineConfig } from "@playwright/test";
  * runner wants isn't downloadable here.
  */
 const CHROMIUM = process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+const PORT = 3100;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -15,8 +16,24 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    baseURL: `http://localhost:${PORT}`,
     trace: "off",
     launchOptions: { executablePath: CHROMIUM },
+  },
+  /**
+   * The suite runs its own server on its own port, so it never depends on
+   * whatever a developer happens to have running, and never fights it for 3000.
+   *
+   * ANTHROPIC_API_KEY is deliberately blanked: these tests cover the UI flows
+   * and the way every AI feature degrades when no key is present. Real scoring
+   * is verified by `npm run ai:calibrate`, which measures it against actual
+   * reader scores rather than asserting it returned something.
+   */
+  webServer: {
+    command: `npm run dev -- --port ${PORT}`,
+    port: PORT,
+    reuseExistingServer: false,
+    timeout: 120_000,
+    env: { ANTHROPIC_API_KEY: "" },
   },
 });

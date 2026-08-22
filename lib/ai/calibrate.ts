@@ -96,6 +96,16 @@ async function main() {
   // punishes reviewers who were right.
   let falseEarned = 0;
   let falseMissed = 0;
+  /**
+   * Agreement split by the scorer's own confidence. If it is reliable when
+   * confident and unreliable when not, the answer is not a better prompt --
+   * it is routing its uncertainty to the teacher.
+   */
+  const buckets = [
+    { name: "confident (>= 0.85)", min: 0.85, agreed: 0, judged: 0 },
+    { name: "middling (0.7-0.85)", min: 0.7, agreed: 0, judged: 0 },
+    { name: "unsure (< 0.7)     ", min: 0, agreed: 0, judged: 0 },
+  ];
   let inputTokens = 0;
   let cacheReadTokens = 0;
   let outputTokens = 0;
@@ -128,8 +138,11 @@ async function main() {
         if (official === undefined) return `${r.label}:—`;
 
         judged += 1;
+        const bucket = buckets.find((b) => r.confidence >= b.min)!;
+        bucket.judged += 1;
         if (r.earned === official) {
           agreed += 1;
+          bucket.agreed += 1;
           return `${r.label}:✓`;
         }
 
@@ -151,6 +164,12 @@ async function main() {
   console.log(`\nAgreement: ${agreed}/${judged} points (${pct}%)`);
   console.log(`  Too generous (scored earned, readers did not): ${falseEarned}`);
   console.log(`  Too harsh (scored not earned, readers did):    ${falseMissed}`);
+
+  console.log("\nAgreement by the scorer's own confidence:");
+  for (const b of buckets) {
+    const pctB = b.judged ? ((b.agreed / b.judged) * 100).toFixed(1) : "—";
+    console.log(`  ${b.name}  ${String(b.agreed).padStart(3)}/${String(b.judged).padEnd(3)}  ${pctB}%`);
+  }
 
   const rate = RATES[SCORING_MODEL];
   if (rate && sampleCount) {

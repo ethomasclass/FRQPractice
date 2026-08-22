@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
 import { test, describe } from "node:test";
-import { assignReviews, computeCalibration, settleMark } from "../scoring";
+import { assignReviews, computeCalibration, settleMark, yardstickFor } from "../scoring";
 
 const peers = (...votes: boolean[]) => votes.map((earned, i) => ({ reviewerId: `r${i}`, earned }));
 
+/** A scorer that agreed with real readers 29 times out of 29 at this confidence. */
+const confidentAi = (earned: boolean) => ({ earned, confidence: 0.95 });
+/** Below the floor, where measured agreement was close to a coin flip. */
+const shakyAi = (earned: boolean) => ({ earned, confidence: 0.6 });
+
 describe("settleMark", () => {
   test("a clear peer majority decides the point", () => {
-    const m = settleMark({ peers: peers(true, true, true, false), ai: { earned: true }, teacher: null });
+    const m = settleMark({ peers: peers(true, true, true, false), ai: confidentAi(true), teacher: null });
     assert.equal(m.earned, true);
     assert.equal(m.source, "peer_majority");
     assert.equal(m.contested, false);
@@ -15,28 +20,28 @@ describe("settleMark", () => {
   });
 
   test("an even split is broken by the AI and flagged for the teacher", () => {
-    const m = settleMark({ peers: peers(true, true, false, false), ai: { earned: false }, teacher: null });
+    const m = settleMark({ peers: peers(true, true, false, false), ai: confidentAi(false), teacher: null });
     assert.equal(m.earned, false);
     assert.equal(m.source, "ai_tiebreak");
     assert.equal(m.contested, true);
   });
 
   test("a majority that contradicts the AI is contested even though peers win", () => {
-    const m = settleMark({ peers: peers(true, true, true, false), ai: { earned: false }, teacher: null });
+    const m = settleMark({ peers: peers(true, true, true, false), ai: confidentAi(false), teacher: null });
     assert.equal(m.earned, true, "peers still decide");
     assert.equal(m.source, "peer_majority");
     assert.equal(m.contested, true, "but the teacher should look");
   });
 
   test("a teacher mark overrides peers and AI and clears the flag", () => {
-    const m = settleMark({ peers: peers(true, true, true, true), ai: { earned: true }, teacher: { earned: false } });
+    const m = settleMark({ peers: peers(true, true, true, true), ai: confidentAi(true), teacher: { earned: false } });
     assert.equal(m.earned, false);
     assert.equal(m.source, "teacher");
     assert.equal(m.contested, false);
   });
 
   test("a makeup response with no peers falls through to the AI alone", () => {
-    const m = settleMark({ peers: [], ai: { earned: true }, teacher: null });
+    const m = settleMark({ peers: [], ai: confidentAi(true), teacher: null });
     assert.equal(m.earned, true);
     assert.equal(m.source, "ai_only");
     assert.equal(m.contested, false);
@@ -48,13 +53,13 @@ describe("settleMark", () => {
   });
 
   test("an odd number of reviewers can never tie", () => {
-    const m = settleMark({ peers: peers(true, false, false), ai: { earned: true }, teacher: null });
+    const m = settleMark({ peers: peers(true, false, false), ai: confidentAi(true), teacher: null });
     assert.equal(m.source, "peer_majority");
     assert.equal(m.earned, false);
   });
 
   test("a single reviewer is a majority of one", () => {
-    const m = settleMark({ peers: peers(true), ai: { earned: true }, teacher: null });
+    const m = settleMark({ peers: peers(true), ai: confidentAi(true), teacher: null });
     assert.equal(m.earned, true);
     assert.equal(m.source, "peer_majority");
   });
@@ -172,5 +177,50 @@ describe("assignReviews", () => {
     for (const indexes of byReviewer.values()) {
       assert.deepEqual([...indexes].sort((a, b) => a - b), indexes.map((_, i) => i + 1));
     }
+  });
+});
+
+describe("low-confidence AI marks", () => {
+  test("a shaky AI deciding a makeup response flags it for the teacher", () => {
+    const m = settleMark({ peers: [], ai: shakyAi(true), teacher: null });
+    assert.equal(m.source, "ai_only");
+    assert.equal(m.contested, true, "nobody else will catch this one");
+  });
+
+  test("a confident AI deciding a makeup response does not need a second look", () => {
+    const m = settleMark({ peers: [], ai: confidentAi(true), teacher: null });
+    assert.equal(m.contested, false);
+  });
+
+  test("a makeup response with no AI at all is flagged rather than silently zeroed", () => {
+    const m = settleMark({ peers: [], ai: null, teacher: null });
+    assert.equal(m.earned, false);
+    assert.equal(m.contested, true);
+  });
+
+  test("a shaky AI is not used to grade reviewers", () => {
+    assert.equal(yardstickFor({ ai: shakyAi(true), teacher: null }), null);
+  });
+
+  test("a confident AI is used to grade reviewers", () => {
+    assert.deepEqual(yardstickFor({ ai: confidentAi(true), teacher: null }), { earned: true });
+  });
+
+  test("a teacher ruling outranks a shaky AI and restores the yardstick", () => {
+    assert.deepEqual(yardstickFor({ ai: shakyAi(true), teacher: { earned: false } }), { earned: false });
+  });
+
+  test("a reviewer is not marked wrong on a point the scorer itself was unsure about", () => {
+    const c = computeCalibration({
+      reviewerId: "r1",
+      judgements: [
+        { earned: true, yardstick: yardstickFor({ ai: confidentAi(true), teacher: null }) },
+        { earned: false, yardstick: yardstickFor({ ai: shakyAi(true), teacher: null }) },
+      ],
+      reviewsAssigned: 1,
+      reviewsCompleted: 1,
+    });
+    assert.equal(c.pointsJudged, 1, "the shaky point is dropped, not counted against them");
+    assert.equal(c.accuracy, 1);
   });
 });
