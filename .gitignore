@@ -47,3 +47,7 @@ local.db-*
 .env.local
 test-results/
 playwright-report/
+
+# Calibration fixtures contain copyrighted College Board text.
+# Build them locally: see fixtures/README.md
+fixtures/*.json

@@ -96,7 +96,16 @@ student feedback. Everything else — writing, peer review, peer-majority scorin
 CSV export — works without it. Where the key is missing the UI disables those
 buttons rather than failing.
 
-**Before trusting the scorer with grades, measure it.** It breaks ties on
+**Before trusting the scorer with grades, measure it.** Build a fixture from
+the College Board sample-response PDFs, then run the harness:
+
+```bash
+pdftotext -layout ap25-apc-human-geography-q1-set-1.pdf q1set1.txt
+npm run ai:fixture -- fixtures/calibration.json q1set1.txt
+npm run ai:calibrate -- fixtures/calibration.json
+```
+
+See [fixtures/README.md](fixtures/README.md) for details. It breaks ties on
 student scores *and* is the yardstick for every reviewer's calibration, so it
 carries real weight:
 

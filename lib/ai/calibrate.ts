@@ -50,6 +50,9 @@ const RATES: Record<string, { input: number; output: number }> = {
 const RESPONSES_PER_SEMESTER = 250;
 
 type Fixture = {
+  source?: string;
+  /** True when the question shows a chart or map that is not in the text. */
+  needsStimulus?: boolean;
   intro?: string;
   stimulusText?: string;
   parts: (Omit<ScorablePart, "id" | "graderNote"> & { graderNote?: string })[];
@@ -64,12 +67,26 @@ async function main() {
     process.exit(1);
   }
 
-  const fixture: Fixture = JSON.parse(readFileSync(path, "utf8"));
-  const parts: ScorablePart[] = fixture.parts.map((p, i) => ({
-    id: String(i),
-    graderNote: p.graderNote ?? "",
-    ...p,
-  }));
+  const raw = JSON.parse(readFileSync(path, "utf8"));
+  const all: Fixture[] = Array.isArray(raw) ? raw : [raw];
+
+  // A stimulus question whose chart was never transcribed would blame the
+  // scorer for data it was never shown. Skip loudly rather than score it.
+  const fixtures = all.filter((f) => {
+    if (f.needsStimulus && !f.stimulusText?.trim()) {
+      console.log(
+        `Skipping ${f.source ?? "a question"}: it has a stimulus (chart or map) and "stimulusText" is empty.\n` +
+          `  Describe the chart there to include its ${f.samples.length} responses.\n`,
+      );
+      return false;
+    }
+    return true;
+  });
+
+  if (fixtures.length === 0) {
+    console.error("Nothing to score.");
+    process.exit(1);
+  }
 
   let agreed = 0;
   let judged = 0;
@@ -83,39 +100,51 @@ async function main() {
   let cacheReadTokens = 0;
   let outputTokens = 0;
 
-  for (const sample of fixture.samples) {
-    const { parts: results, usage } = await scoreResponse({
-      intro: fixture.intro ?? "",
-      stimulusText: fixture.stimulusText ?? "",
-      parts,
-      responseText: sample.responseText,
-    });
+  let sampleCount = 0;
 
-    inputTokens += usage.inputTokens;
-    cacheReadTokens += usage.cacheReadTokens;
-    outputTokens += usage.outputTokens;
+  for (const fixture of fixtures) {
+    const parts: ScorablePart[] = fixture.parts.map((p, i) => ({
+      id: String(i),
+      graderNote: p.graderNote ?? "",
+      ...p,
+    }));
 
-    const marks = results.map((r) => {
-      const official = sample.officialScores[r.label];
-      if (official === undefined) return `${r.label}:—`;
+    for (const sample of fixture.samples) {
+      sampleCount += 1;
+      const { parts: results, usage } = await scoreResponse({
+        intro: fixture.intro ?? "",
+        stimulusText: fixture.stimulusText ?? "",
+        parts,
+        responseText: sample.responseText,
+      });
 
-      judged += 1;
-      if (r.earned === official) {
-        agreed += 1;
-        return `${r.label}:✓`;
-      }
+      inputTokens += usage.inputTokens;
+      cacheReadTokens += usage.cacheReadTokens;
+      outputTokens += usage.outputTokens;
 
-      if (r.earned && !official) falseEarned += 1;
-      else falseMissed += 1;
-      disagreements.push(
-        `  ${sample.name} part ${r.label}: official ${official ? "EARNED" : "NOT EARNED"}, ` +
-          `scorer said ${r.earned ? "EARNED" : "NOT EARNED"} (confidence ${r.confidence.toFixed(2)})\n` +
-          `    reasoning: ${r.justification}`,
-      );
-      return `${r.label}:✗`;
-    });
+      const label = `${fixture.source ?? ""} ${sample.name}`.trim();
+      const marks = results.map((r) => {
+        const official = sample.officialScores[r.label];
+        if (official === undefined) return `${r.label}:—`;
 
-    console.log(`${sample.name.padEnd(32)} ${marks.join(" ")}`);
+        judged += 1;
+        if (r.earned === official) {
+          agreed += 1;
+          return `${r.label}:✓`;
+        }
+
+        if (r.earned && !official) falseEarned += 1;
+        else falseMissed += 1;
+        disagreements.push(
+          `  ${label} part ${r.label}: official ${official ? "EARNED" : "NOT EARNED"}, ` +
+            `scorer said ${r.earned ? "EARNED" : "NOT EARNED"} (confidence ${r.confidence.toFixed(2)})\n` +
+            `    reasoning: ${r.justification}`,
+        );
+        return `${r.label}:✗`;
+      });
+
+      console.log(`${label.slice(-40).padEnd(42)} ${marks.join(" ")}`);
+    }
   }
 
   const pct = judged ? ((agreed / judged) * 100).toFixed(1) : "0.0";
@@ -124,15 +153,15 @@ async function main() {
   console.log(`  Too harsh (scored not earned, readers did):    ${falseMissed}`);
 
   const rate = RATES[SCORING_MODEL];
-  if (rate && fixture.samples.length) {
+  if (rate && sampleCount) {
     // Cached reads bill at roughly a tenth of fresh input.
     const cost =
       (inputTokens * rate.input) / 1e6 +
       (cacheReadTokens * rate.input * 0.1) / 1e6 +
       (outputTokens * rate.output) / 1e6;
-    const perResponse = cost / fixture.samples.length;
+    const perResponse = cost / sampleCount;
     console.log(
-      `\nCost: $${cost.toFixed(4)} for ${fixture.samples.length} responses ` +
+      `\nCost: $${cost.toFixed(4)} for ${sampleCount} responses ` +
         `($${perResponse.toFixed(4)} each) — about $${(perResponse * RESPONSES_PER_SEMESTER).toFixed(2)} ` +
         `to score a semester.`,
     );

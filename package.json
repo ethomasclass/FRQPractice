@@ -17,7 +17,8 @@
     "db:seed:responses": "tsx lib/db/seed-responses.ts",
     "ai:calibrate": "tsx lib/ai/calibrate.ts",
     "db:seed:reviews": "tsx lib/db/seed-reviews.ts",
-    "db:reset": "tsx lib/db/reset.ts"
+    "db:reset": "tsx lib/db/reset.ts",
+    "ai:fixture": "tsx lib/ai/build-fixture.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
