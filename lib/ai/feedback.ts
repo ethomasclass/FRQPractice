@@ -1,4 +1,4 @@
-import { anthropic, SCORING_MODEL } from "./client";
+import { anthropic, FEEDBACK_MODEL } from "./client";
 
 export type FeedbackPart = {
   label: string;
@@ -64,7 +64,7 @@ Rules:
 - End with one specific thing to do on the next FRQ.`;
 
   const message = await anthropic().messages.create({
-    model: SCORING_MODEL,
+    model: FEEDBACK_MODEL,
     max_tokens: 16000,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
     thinking: { type: "adaptive" },

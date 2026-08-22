@@ -67,7 +67,7 @@ export async function scoreAssignment(assignmentId: string) {
 
   for (const response of todo) {
     try {
-      const results = await scoreResponse({
+      const { parts: results } = await scoreResponse({
         intro: assignment.intro,
         stimulusText: assignment.stimulusText,
         parts: parts.map((p) => ({

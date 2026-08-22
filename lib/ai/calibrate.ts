@@ -7,6 +7,12 @@
  * against. So it should be measured, not assumed. Point this at responses that
  * already have official scores and it reports per-part agreement.
  *
+ * It also reports what the run actually cost, so choosing a cheaper model is a
+ * measured tradeoff rather than a guess. Compare two models directly:
+ *
+ *   npm run ai:calibrate -- fixtures/calibration.json
+ *   SCORING_MODEL=claude-sonnet-5 npm run ai:calibrate -- fixtures/calibration.json
+ *
  * Usage:
  *   npm run ai:calibrate -- fixtures/calibration.json
  *
@@ -27,6 +33,21 @@
  */
 import { readFileSync } from "node:fs";
 import { scoreResponse, type ScorablePart } from "./score";
+import { SCORING_EFFORT, SCORING_MODEL } from "./client";
+
+/**
+ * Published per-million-token rates, used only to turn a calibration run into a
+ * per-semester estimate. Update if pricing changes; a missing model just skips
+ * the cost line rather than guessing.
+ */
+const RATES: Record<string, { input: number; output: number }> = {
+  "claude-opus-5": { input: 5, output: 25 },
+  "claude-sonnet-5": { input: 3, output: 15 },
+  "claude-haiku-4-5": { input: 1, output: 5 },
+};
+
+/** 50 students x 5 FRQs a semester, scored once each. */
+const RESPONSES_PER_SEMESTER = 250;
 
 type Fixture = {
   intro?: string;
@@ -36,6 +57,7 @@ type Fixture = {
 };
 
 async function main() {
+  console.log(`Scoring with ${SCORING_MODEL} at effort ${SCORING_EFFORT}.\n`);
   const path = process.argv[2];
   if (!path) {
     console.error("Usage: npm run ai:calibrate -- <fixture.json>");
@@ -57,14 +79,21 @@ async function main() {
   // punishes reviewers who were right.
   let falseEarned = 0;
   let falseMissed = 0;
+  let inputTokens = 0;
+  let cacheReadTokens = 0;
+  let outputTokens = 0;
 
   for (const sample of fixture.samples) {
-    const results = await scoreResponse({
+    const { parts: results, usage } = await scoreResponse({
       intro: fixture.intro ?? "",
       stimulusText: fixture.stimulusText ?? "",
       parts,
       responseText: sample.responseText,
     });
+
+    inputTokens += usage.inputTokens;
+    cacheReadTokens += usage.cacheReadTokens;
+    outputTokens += usage.outputTokens;
 
     const marks = results.map((r) => {
       const official = sample.officialScores[r.label];
@@ -93,6 +122,26 @@ async function main() {
   console.log(`\nAgreement: ${agreed}/${judged} points (${pct}%)`);
   console.log(`  Too generous (scored earned, readers did not): ${falseEarned}`);
   console.log(`  Too harsh (scored not earned, readers did):    ${falseMissed}`);
+
+  const rate = RATES[SCORING_MODEL];
+  if (rate && fixture.samples.length) {
+    // Cached reads bill at roughly a tenth of fresh input.
+    const cost =
+      (inputTokens * rate.input) / 1e6 +
+      (cacheReadTokens * rate.input * 0.1) / 1e6 +
+      (outputTokens * rate.output) / 1e6;
+    const perResponse = cost / fixture.samples.length;
+    console.log(
+      `\nCost: $${cost.toFixed(4)} for ${fixture.samples.length} responses ` +
+        `($${perResponse.toFixed(4)} each) — about $${(perResponse * RESPONSES_PER_SEMESTER).toFixed(2)} ` +
+        `to score a semester.`,
+    );
+    console.log(
+      `  ${inputTokens.toLocaleString()} input, ${cacheReadTokens.toLocaleString()} cached, ` +
+        `${outputTokens.toLocaleString()} output (thinking included).`,
+    );
+    console.log("  Feedback writing roughly doubles this. Both are separate from any claude.ai subscription.");
+  }
 
   if (disagreements.length) {
     console.log(`\nDisagreements:\n${disagreements.join("\n")}`);

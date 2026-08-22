@@ -99,6 +99,24 @@ usefully, which direction it errs: too generous inflates grades, too harsh
 punishes reviewers who were right. It exits non-zero below 90%.
 `lib/ai/calibrate.ts` documents the fixture format.
 
+It also reports what the run cost and extrapolates to a semester, so choosing a
+cheaper model is a measured tradeoff. To compare two:
+
+```bash
+npm run ai:calibrate -- fixtures/calibration.json
+SCORING_MODEL=claude-sonnet-5 npm run ai:calibrate -- fixtures/calibration.json
+```
+
+Scoring and feedback are configured separately (`SCORING_MODEL`,
+`FEEDBACK_MODEL`) because they are different jobs: scoring decides grades and
+anchors calibration, while feedback is writing. `SCORING_EFFORT` controls
+thinking depth — thinking bills as output, so it moves cost more than the model
+tier does.
+
+**API usage is billed separately from any claude.ai subscription.** A Pro or Max
+plan covers claude.ai and Claude Code, not a deployed app calling the API with a
+key.
+
 ### Exemplars and copyright
 
 Released College Board questions and scoring guidelines are copyrighted.

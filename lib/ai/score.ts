@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { anthropic, SCORING_MODEL } from "./client";
+import { anthropic, SCORING_EFFORT, SCORING_MODEL } from "./client";
 
 export type ScorablePart = {
   id: string;
@@ -30,6 +30,15 @@ const ScoreSchema = z.object({ parts: z.array(PartScoreSchema) });
 
 export type PartScore = z.infer<typeof PartScoreSchema>;
 
+export type ScoreUsage = {
+  inputTokens: number;
+  cacheReadTokens: number;
+  outputTokens: number;
+  model: string;
+};
+
+export type ScoreResult = { parts: PartScore[]; usage: ScoreUsage };
+
 /**
  * Scores one response against the rubric, part by part.
  *
@@ -43,7 +52,7 @@ export async function scoreResponse(args: {
   stimulusText: string;
   parts: ScorablePart[];
   responseText: string;
-}): Promise<PartScore[]> {
+}): Promise<ScoreResult> {
   const { intro, stimulusText, parts, responseText } = args;
 
   const rubric = parts
@@ -78,7 +87,7 @@ Return a score for every part, in order.`;
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
     thinking: { type: "adaptive" },
     output_config: {
-      effort: "high",
+      effort: SCORING_EFFORT,
       format: zodOutputFormat(ScoreSchema),
     },
     messages: [
@@ -101,7 +110,7 @@ ${responseText || "(the student submitted nothing)"}`,
   if (!parsed) throw new Error("AI scoring returned no parsable result.");
 
   // Return them in rubric order, and never invent a part the rubric doesn't have.
-  return parts.map((p) => {
+  const scored = parts.map((p) => {
     const match = parsed.parts.find((s) => s.label.trim().toUpperCase() === p.label.toUpperCase());
     return (
       match ?? {
@@ -114,4 +123,16 @@ ${responseText || "(the student submitted nothing)"}`,
       }
     );
   });
+
+  return {
+    parts: scored,
+    usage: {
+      inputTokens: response.usage.input_tokens,
+      cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+      // Thinking tokens are billed here too, which is why effort moves cost
+      // more than the model tier does.
+      outputTokens: response.usage.output_tokens,
+      model: SCORING_MODEL,
+    },
+  };
 }
