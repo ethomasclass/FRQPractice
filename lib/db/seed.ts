@@ -158,6 +158,17 @@ async function main() {
     );
   }
 
+  // A second, empty assignment left in draft so the rubric editor and the
+  // drafting panel can be exercised without disturbing the first one.
+  await db.insert(schema.assignments).values({
+    id: newId(),
+    sectionId,
+    title: "Untitled FRQ (draft)",
+    timeLimitMinutes: 25,
+    reviewsPerResponse: 4,
+    status: "draft",
+  });
+
   console.log(`Seeded section ${sectionId} (join code K4TR9M) with ${roster.length} students.`);
   console.log(`Seeded assignment ${assignmentId} with ${QUESTION_1.length} rubric parts.`);
   client.close();

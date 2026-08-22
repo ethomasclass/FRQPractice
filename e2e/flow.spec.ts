@@ -13,7 +13,7 @@ test("teacher assigns reviews and a student reviews a peer", async ({ page }) =>
   await expect(page.getByText("Peer review")).toBeVisible();
 
   // Absent students must not block anyone.
-  await page.getByRole("link", { name: "Open" }).first().click();
+  await page.locator("li", { hasText: "Supranational" }).getByRole("link", { name: "Open" }).click();
   await expect(page.getByText(/Hasn't submitted \(12\)/)).toBeVisible();
   await expect(page.getByText("0 of 32")).toBeVisible(); // 8 responses x 4 reviewers
 

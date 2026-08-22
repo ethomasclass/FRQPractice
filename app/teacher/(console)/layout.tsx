@@ -23,6 +23,9 @@ export default async function TeacherLayout({ children }: { children: React.Reac
               <Link href="/teacher/classes" className="text-muted hover:text-foreground">
                 Classes
               </Link>
+              <Link href="/teacher/exemplars" className="text-muted hover:text-foreground">
+                Exemplars
+              </Link>
             </nav>
           </div>
           <form action={signOutAction}>

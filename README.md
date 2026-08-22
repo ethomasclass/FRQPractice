@@ -77,6 +77,18 @@ npm run db:seed:responses    # eight submitted responses of varying quality
 npm run db:seed:reviews      # completes the outstanding peer reviews
 ```
 
+### Drafting a rubric
+
+Paste released scoring guidelines into **Exemplars**, then use **Draft with AI**
+on a draft assignment. It writes the parts and acceptable responses in the style
+of those exemplars and loads them into the editor — **nothing is written to the
+database until you press Save**. That guardrail is deliberate: a rubric is the
+definition of "correct" for peer scoring, AI scoring, and reviewer calibration
+at once, so an unreviewed one would quietly corrupt every number the app
+produces.
+
+Two or three exemplars is plenty. More does not make it better.
+
 ### AI features
 
 Set `ANTHROPIC_API_KEY` to enable independent scoring, rubric drafting, and

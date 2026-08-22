@@ -1,9 +1,14 @@
 import { notFound } from "next/navigation";
 import { loadAssignment, unsubmittedStudents } from "@/app/actions/teacher";
+import { listExemplars } from "@/app/actions/exemplars";
+import { aiConfigured } from "@/lib/ai/client";
 import { STATUS_BLURB, STATUS_LABELS } from "@/lib/labels";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { LifecycleButtons } from "../../lifecycle-buttons";
 import { RubricEditor } from "./rubric-editor";
+
+/** Drafting a full rubric runs the model for a while; 10 seconds is not enough. */
+export const maxDuration = 60;
 
 export default async function AssignmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -11,6 +16,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   if (!data) notFound();
 
   const missing = await unsubmittedStudents(id);
+  const exemplars = await listExemplars();
   const submitted = data.responses.filter((r) => r.submittedAt).length;
 
   return (
@@ -63,6 +69,8 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
       <RubricEditor
         assignmentId={id}
         locked={data.assignment.status !== "draft"}
+        exemplars={exemplars.map((e) => ({ id: e.id, title: e.title }))}
+        aiReady={aiConfigured()}
         initialParts={data.parts.map((p) => ({
           label: p.label,
           taskVerb: p.taskVerb,

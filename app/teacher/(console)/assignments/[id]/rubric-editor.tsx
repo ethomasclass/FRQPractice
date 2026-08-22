@@ -6,6 +6,7 @@ import type { TaskVerb } from "@/lib/db/schema";
 import { saveRubric } from "@/app/actions/teacher";
 import { VERB_DEMAND } from "@/lib/labels";
 import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui";
+import { DraftPanel, type DraftedPart } from "./draft-panel";
 
 type Part = {
   label: string;
@@ -32,10 +33,14 @@ export function RubricEditor({
   assignmentId,
   locked,
   initialParts,
+  exemplars,
+  aiReady,
 }: {
   assignmentId: string;
   locked: boolean;
   initialParts: Part[];
+  exemplars: { id: string; title: string }[];
+  aiReady: boolean;
 }) {
   const router = useRouter();
   const [parts, setParts] = useState<Part[]>(
@@ -43,6 +48,19 @@ export function RubricEditor({
   );
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [drafted, setDrafted] = useState<{ intro: string } | null>(null);
+
+  /**
+   * A draft only ever lands in the editor. It is not written anywhere until the
+   * teacher reads it and presses Save — a rubric defines "correct" for peer
+   * scoring, AI scoring, and calibration at once, so an unreviewed one would
+   * quietly corrupt every number downstream.
+   */
+  function applyDraft(parts: DraftedPart[], intro: string) {
+    setParts(parts);
+    setDrafted({ intro });
+    setSaved(false);
+  }
 
   function patch(i: number, next: Partial<Part>) {
     setParts((prev) => prev.map((p, j) => (i === j ? { ...p, ...next } : p)));
@@ -95,6 +113,24 @@ export function RubricEditor({
 
   return (
     <section>
+      {!locked ? <DraftPanel exemplars={exemplars} aiReady={aiReady} onDraft={applyDraft} /> : null}
+
+      {drafted ? (
+        <Card className="mb-4 border-brand-border bg-brand-soft p-4">
+          <p className="text-sm font-medium text-foreground">Draft loaded — nothing is saved yet.</p>
+          <p className="mt-1 text-sm text-muted">
+            Read every acceptable response before you save. On Explain parts especially, check each one actually
+            contains the causal link — that is the point students lose most often, and a rubric that is vague here makes
+            both your reviewers and the scorer unreliable.
+          </p>
+          {drafted.intro ? (
+            <p className="mt-3 rounded-lg bg-surface p-3 text-sm text-foreground">
+              <span className="font-medium">Suggested scene-setter:</span> {drafted.intro}
+            </p>
+          ) : null}
+        </Card>
+      ) : null}
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Rubric</h2>
