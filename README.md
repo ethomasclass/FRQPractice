@@ -177,16 +177,15 @@ Classroom use is fine; republishing them is not. Keep them in your own database
 
 ## Deploying
 
-[**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Ftree%2Fclaude%2Fap-geo-frq-platform-siyhkv&env=DATABASE_URL%2CDATABASE_AUTH_TOKEN%2CSESSION_SECRET%2CTEACHER_PASSWORD%2CANTHROPIC_API_KEY&envDescription=Turso%20database%20URL%20and%20token%2C%20a%2032%2B%20character%20session%20secret%2C%20your%20teacher%20password%2C%20and%20%28optionally%29%20an%20Anthropic%20API%20key.&envLink=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Fblob%2Fclaude%2Fap-geo-frq-platform-siyhkv%2FDEPLOY.md&project-name=frq-practice&repository-name=frq-practice) — one click, then paste in five environment
-variables. See [DEPLOY.md](DEPLOY.md) for the step-by-step version.
+Import the repo at **[vercel.com/new](https://vercel.com/new)** and add five
+environment variables — see [DEPLOY.md](DEPLOY.md) for the step-by-step version.
+Use the import flow, not a "Deploy to Vercel" template button: template buttons
+clone the repository publicly and fail on a private repo.
 
 GitHub Pages cannot host this: it serves static files only, so there is no
 server to run the database or hold a secret. Anything it served would expose
 your API key and teacher password to any student who opened DevTools. GitHub
-stores the code; Vercel runs it and provides the web address. Both are free
-at this scale — 50 students writing ten FRQs a year uses well under 1% of a
-monthly free allowance. The only real cost is AI usage, a few tens of dollars a
-semester.
+stores the code; Vercel runs it and provides the web address.
 
 Scoring and feedback run one response per request, driven from the browser with
 a progress bar, which keeps each request inside serverless duration limits and

@@ -7,17 +7,29 @@ server, no database, and no way to keep a secret, since everything it serves is
 readable in the browser. Your API key and teacher password would be public.
 GitHub holds the code; Vercel runs it and gives you the web address.
 
-## The one-click route
+## Import the repository into Vercel
 
-[**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Ftree%2Fclaude%2Fap-geo-frq-platform-siyhkv&env=DATABASE_URL%2CDATABASE_AUTH_TOKEN%2CSESSION_SECRET%2CTEACHER_PASSWORD%2CANTHROPIC_API_KEY&envDescription=Turso%20database%20URL%20and%20token%2C%20a%2032%2B%20character%20session%20secret%2C%20your%20teacher%20password%2C%20and%20%28optionally%29%20an%20Anthropic%20API%20key.&envLink=https%3A%2F%2Fgithub.com%2Fethomasclass%2FFRQPractice%2Fblob%2Fclaude%2Fap-geo-frq-platform-siyhkv%2FDEPLOY.md&project-name=frq-practice&repository-name=frq-practice)
+Do **not** use a "Deploy to Vercel" template button. That flow clones the
+repository as a public template and fails on a private repo with *"The
+repository used by this template is private or does not exist."* Import the
+repo instead — Vercel reads it through the GitHub app, private or not.
 
-That clones the repo into your own Vercel account and prompts for the five
-environment variables below. Create the Turso database first (step 1) so you
-have the URL and token ready to paste.
+1. Create the Turso database first (step 1 below) so the URL and token are ready.
+2. Go to **[vercel.com/new](https://vercel.com/new)**.
+3. Under **Import Git Repository**, connect GitHub if you haven't, then pick
+   **ethomasclass/FRQPractice**. If it isn't listed, use *Adjust GitHub App
+   Permissions* and grant access to it.
+4. Leave the framework preset alone — Vercel detects Next.js.
+5. Expand **Environment Variables** and add the five from step 4 below.
+6. **Deploy.**
 
-When it finishes you get a live address like `https://frq-practice.vercel.app` —
-that is the link you give students. You can attach your own domain later in the
-Vercel project settings if you'd rather.
+Vercel builds whatever branch the repository treats as default, which for this
+repo is `claude/ap-geo-frq-platform-siyhkv` — the branch with all the code, so
+there is nothing to merge first. To change it later:
+**Project → Settings → Git → Production Branch**.
+
+When the build finishes you get an address like
+`https://frq-practice.vercel.app`. That is the link you give students.
 
 ## 1. Create the database
 
