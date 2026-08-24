@@ -29,7 +29,10 @@ async function main() {
   await client.execute("PRAGMA foreign_keys = ON");
   client.close();
 
-  const run = (script: string) => execFileSync("npx", ["tsx", script], { stdio: "inherit", env: process.env });
+  // migrate.ts refuses to guess a database in production, so local tooling
+  // states which one it means rather than relying on a default.
+  const env = { ...process.env, DATABASE_URL: url };
+  const run = (script: string) => execFileSync("npx", ["tsx", script], { stdio: "inherit", env });
   run("lib/db/migrate.ts");
   run("lib/db/seed.ts");
   run("lib/db/seed-responses.ts");
