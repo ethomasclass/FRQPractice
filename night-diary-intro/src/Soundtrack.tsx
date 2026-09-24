@@ -61,7 +61,7 @@ export const Soundtrack: React.FC = () => (
 
     {/* Narration */}
     {(Object.keys(VOICE_CUES) as VoiceId[]).map((id) => (
-      <Cue key={id} src={VOICE[id].file} at={VOICE_CUES[id]} seconds={VOICE[id].seconds + 0.1} volume={1} fadeOut={2} />
+      <Cue key={id} src={VOICE[id].file} at={VOICE_CUES[id]} seconds={VOICE[id].seconds + 0.1} volume={0.8} fadeOut={2} />
     ))}
 
     {/* Night ambience */}
@@ -80,7 +80,7 @@ export const Soundtrack: React.FC = () => (
 
     {/* Stamps */}
     {SFX.stampThud.map((at, i) => (
-      <Cue key={`st-${i}`} src="audio/sfx/stamp-thud.mp3" at={at} seconds={0.7} volume={0.85} />
+      <Cue key={`st-${i}`} src="audio/sfx/stamp-thud.mp3" at={at} seconds={0.7} volume={0.7} />
     ))}
 
     {/* The line */}

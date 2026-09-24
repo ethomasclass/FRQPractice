@@ -37,7 +37,7 @@
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc",
     "preview": "remotion studio",
-    "render": "remotion render NightDiaryIntro out/night-diary-intro.mp4 --codec h264 --crf 18 --audio-codec aac",
+    "render": "remotion render NightDiaryIntro out/night-diary-intro.mp4 --codec h264 --crf 21 --audio-codec aac",
     "assets": "python3 scripts/fetch-images.py && python3 scripts/cutouts.py && python3 scripts/halftone.py && node scripts/build-map.mjs && python3 scripts/make-textures.py && python3 scripts/synth-audio.py",
     "voice": "python3 scripts/voice.py",
     "voice:placeholders": "python3 scripts/voice.py --placeholders",
