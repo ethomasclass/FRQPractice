@@ -1,0 +1,16 @@
+# The Night Diary: 2-minute intro narration script
+# Format: <clip id> | <voice: NISHA or NARRATOR> | <line>
+# Each clip is rendered to public/audio/voice/<clip id>.wav (ElevenLabs if ELEVENLABS_API_KEY is set, otherwise a silent placeholder).
+# To record your own voice, save a WAV with the same name and run `python3 scripts/voice.py --durations`.
+
+s1-dear-mama   | NISHA    | Dear Mama,
+s2-a           | NISHA    | My name is Nisha. I'm twelve.
+s2-b           | NISHA    | I live in Mirpur Khas with Papa, Amil, and Dadi.
+s2-c           | NISHA    | I never met you, Mama.
+s2-d           | NISHA    | So I'm going to write to you every night.
+s3-world       | NARRATOR | For almost a hundred years, Britain ruled India. Hindus, Muslims, Sikhs, and Christians lived side by side, in the same towns and on the same streets.
+s4-names       | NARRATOR | In 1947, India won its freedom. But its leaders could not agree on what that freedom would look like.
+s5-line        | NARRATOR | A British lawyer who had never been to India drew the border in about five weeks.
+s6-movement    | NARRATOR | Almost overnight, millions of people found themselves on the wrong side of a line.
+s7-a           | NISHA    | Papa says we are Hindu, so we have to leave.
+s7-b           | NISHA    | But Mama, you were Muslim. So what am I?

@@ -1,0 +1,68 @@
+{
+  "s1-dear-mama": {
+    "file": "audio/voice/s1-dear-mama.wav",
+    "seconds": 0.883,
+    "voice": "NISHA",
+    "text": "Dear Mama,"
+  },
+  "s2-a": {
+    "file": "audio/voice/s2-a.wav",
+    "seconds": 2.52,
+    "voice": "NISHA",
+    "text": "My name is Nisha. I'm twelve."
+  },
+  "s2-b": {
+    "file": "audio/voice/s2-b.wav",
+    "seconds": 3.494,
+    "voice": "NISHA",
+    "text": "I live in Mirpur Khas with Papa, Amil, and Dadi."
+  },
+  "s2-c": {
+    "file": "audio/voice/s2-c.wav",
+    "seconds": 1.607,
+    "voice": "NISHA",
+    "text": "I never met you, Mama."
+  },
+  "s2-d": {
+    "file": "audio/voice/s2-d.wav",
+    "seconds": 2.546,
+    "voice": "NISHA",
+    "text": "So I'm going to write to you every night."
+  },
+  "s3-world": {
+    "file": "audio/voice/s3-world.wav",
+    "seconds": 12.467,
+    "voice": "NARRATOR",
+    "text": "For almost a hundred years, Britain ruled India. Hindus, Muslims, Sikhs, and Christians lived side by side, in the same towns and on the same streets."
+  },
+  "s4-names": {
+    "file": "audio/voice/s4-names.wav",
+    "seconds": 9.954,
+    "voice": "NARRATOR",
+    "text": "In 1947, India won its freedom. But its leaders could not agree on what that freedom would look like."
+  },
+  "s5-line": {
+    "file": "audio/voice/s5-line.wav",
+    "seconds": 6.996,
+    "voice": "NARRATOR",
+    "text": "A British lawyer who had never been to India drew the border in about five weeks."
+  },
+  "s6-movement": {
+    "file": "audio/voice/s6-movement.wav",
+    "seconds": 5.829,
+    "voice": "NARRATOR",
+    "text": "Almost overnight, millions of people found themselves on the wrong side of a line."
+  },
+  "s7-a": {
+    "file": "audio/voice/s7-a.wav",
+    "seconds": 2.931,
+    "voice": "NISHA",
+    "text": "Papa says we are Hindu, so we have to leave."
+  },
+  "s7-b": {
+    "file": "audio/voice/s7-b.wav",
+    "seconds": 2.973,
+    "voice": "NISHA",
+    "text": "But Mama, you were Muslim. So what am I?"
+  }
+}

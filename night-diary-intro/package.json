@@ -1,0 +1,49 @@
+{
+  "name": "night-diary-intro",
+  "version": "1.0.0",
+  "description": "2-minute animated intro to The Night Diary (AP Human Geography)",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.528",
+    "@remotion/media": "^4.0.528",
+    "@remotion/noise": "^4.0.528",
+    "@remotion/paths": "^4.0.528",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.528"
+  },
+  "devDependencies": {
+    "@remotion/bundler": "^4.0.528",
+    "@remotion/eslint-config-flat": "4.0.528",
+    "@remotion/renderer": "^4.0.528",
+    "@types/d3-geo": "^3.1.1",
+    "@types/react": "19.2.7",
+    "@types/topojson-client": "^3.1.5",
+    "@types/web": "0.0.166",
+    "d3-geo": "^3.1.1",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "sharp": "^0.35.4",
+    "topojson-client": "^3.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "world-atlas": "^2.0.2"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src && tsc",
+    "preview": "remotion studio",
+    "render": "remotion render NightDiaryIntro out/night-diary-intro.mp4 --codec h264 --crf 18 --audio-codec aac",
+    "assets": "python3 scripts/fetch-images.py && python3 scripts/cutouts.py && python3 scripts/halftone.py && node scripts/build-map.mjs && python3 scripts/make-textures.py && python3 scripts/synth-audio.py",
+    "voice": "python3 scripts/voice.py",
+    "voice:placeholders": "python3 scripts/voice.py --placeholders",
+    "stills": "node scripts/stills.mjs"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}
