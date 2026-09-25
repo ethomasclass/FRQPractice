@@ -18,11 +18,9 @@ IMAGES = {
     "jinnah": "Jinnah1945c.jpg",
     "mountbatten": "Lord_Louis_Mountbatten,_Bestanddeelnr_902-0486.jpg",
     # Refugee trains and migration, from Category:Partition of India
-    "refugees-train": "Hindus_and_Sikh_on_train_to_India.jpg",
     "refugees-train-punjab": "A_refugee_train,_Punjab,_1947.jpg",
     "refugees-columns": "Columns_of_refugees_from_West_Punjab.jpg",
     "refugees-to-india": "Refugees_en_route_to_India.jpg",
-    "refugees-to-pakistan": "Refugees_en_route_to_Pakistan;.jpg",
 }
 
 

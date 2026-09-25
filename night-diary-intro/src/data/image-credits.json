@@ -59,19 +59,49 @@
       3790
     ]
   },
-  "refugees-train": {
-    "title": "File:Hindus and Sikh on train to India.jpg",
-    "thumb": "https://upload.wikimedia.org/wikipedia/commons/7/73/Hindus_and_Sikh_on_train_to_India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
-    "page": "https://commons.wikimedia.org/wiki/File:Hindus_and_Sikh_on_train_to_India.jpg",
-    "license": "CC BY-SA 3.0",
-    "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Technark-1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Technark-1 (page does not exist)\">Technark-1</a>",
-    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
-    "date": "2013-03-01 14:37:57",
-    "desc": "people",
+  "refugees-train-punjab": {
+    "title": "File:A refugee train, Punjab, 1947.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/3/37/A_refugee_train%2C_Punjab%2C_1947.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:A_refugee_train,_Punjab,_1947.jpg",
+    "license": "Public domain",
+    "artist": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"http://www.columbia.edu/itc/mealac/pritchett/00routesdata/1900_1999/partition/trains/trains.html\">http://www.columbia.edu/itc/mealac/pritchett/00routesdata/1900_1999/partition/trains/trains.html</a>",
+    "date": "1947",
+    "desc": "<p>A refugee train, Punjab, 1947\n</p><p>Source: <a rel=\"nofollow\" class=\"external free\" href=\"http://www.namdar.net/Partition1947.htm\">http://www.namdar.net/Partition1947.htm</a>\n</p>\n(downloaded May 2004)",
     "mime": "image/jpeg",
     "size": [
-      680,
-      378
+      500,
+      342
+    ]
+  },
+  "refugees-columns": {
+    "title": "File:Columns of refugees from West Punjab.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/3/35/Columns_of_refugees_from_West_Punjab.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Columns_of_refugees_from_West_Punjab.jpg",
+    "license": "Public domain",
+    "artist": "Photo Division, <a href=\"https://en.wikipedia.org/wiki/Government_of_India\" class=\"extiw\" title=\"w:Government of India\">Govt. of India</a>",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"http://photodivision.gov.in/waterMarkdetails.asp?id=941.jpg\">http://photodivision.gov.in/waterMarkdetails.asp?id=941.jpg</a>",
+    "date": "1947-09",
+    "desc": "Columns of non-Muslim refugees from <a href=\"https://en.wikipedia.org/wiki/West_Punjab\" class=\"extiw\" title=\"en:West Punjab\">West Punjab</a> moving towards <a href=\"https://en.wikipedia.org/wiki/India\" class=\"extiw\" title=\"w:India\">India</a>. Picture shows them near Baloke Head.",
+    "mime": "image/jpeg",
+    "size": [
+      1473,
+      1450
+    ]
+  },
+  "refugees-to-india": {
+    "title": "File:Refugees en route to India.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Refugees_en_route_to_India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Refugees_en_route_to_India.jpg",
+    "license": "Public domain",
+    "artist": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"http://www.columbia.edu/itc/mealac/pritchett/00routesdata/1900_1999/partition/refugees/refugees.html\">http://www.columbia.edu/itc/mealac/pritchett/00routesdata/1900_1999/partition/refugees/refugees.html</a>",
+    "date": "between 1947 and 1948<div style=\"display: none;\">date QS:P,+1947-00-00T00:00:00Z/8,P1319,+1947-00-00T00:00:00Z/9,P1326,+1948-00-00T00:00:00Z/9</div>",
+    "desc": "More Chicago Sun-Times photos: Refugees en route to Pakistan; and *refugees en route to India*",
+    "mime": "image/jpeg",
+    "size": [
+      1024,
+      817
     ]
   }
 }

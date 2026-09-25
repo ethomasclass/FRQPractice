@@ -14,9 +14,9 @@ OUT = os.path.join(ROOT, "src", "data", "halftone.json")
 
 # Photos in the order they appear, with an optional crop (fractions: left, top, right, bottom).
 PHOTOS = [
-    ("refugees-train-punjab", (0, 0, 1, 1)),
-    ("refugees-train", (0.04, 0, 0.62, 1)),
-    ("refugees-columns", (0, 0, 1, 1)),
+    ("refugees-train-punjab", (0.0, 0.0, 0.62, 1.0)),
+    ("refugees-columns", (0.0, 0.38, 0.72, 1.0)),
+    ("refugees-to-india", (0.0, 0.12, 0.75, 1.0)),
 ]
 COLS = 120  # dots across
 
